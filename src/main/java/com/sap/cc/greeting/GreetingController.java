@@ -6,8 +6,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import org.slf4j.*;
+
 @RestController
 public class GreetingController {
+
+	private Logger logger = LoggerFactory.getLogger(getClass());
 
 	private GreetingService service;
 
@@ -17,12 +21,14 @@ public class GreetingController {
 
 	@GetMapping("/hello")
 	public String greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
+		MDC.put("path", "/hello");
 		return getGreeting("Hello", name);
 	}
 
 	@GetMapping("/howdy")
 	public String deprecatedGreeting(@RequestParam(value = "name", defaultValue = "World") String name) {
-		System.err.println("Deprecated endpoint used.");
+		MDC.put("path", "/howdy");
+		logger.info("Deprecated endpoint used.");
 		return getGreeting("Howdy", name);
 	}
 
@@ -32,6 +38,7 @@ public class GreetingController {
 		} catch (IllegalArgumentException ex) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
 		} finally {
+			MDC.clear();
 		}
 	}
 
